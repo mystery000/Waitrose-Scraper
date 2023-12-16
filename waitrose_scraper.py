@@ -5,6 +5,7 @@ import math
 import json
 import logging
 import requests
+from tqdm import tqdm
 from typing import List
 import multiprocessing as mp
 from bs4 import BeautifulSoup
@@ -140,7 +141,7 @@ def run_waitrose_scraper():
     
     products = []
     
-    for _ in range(request_count):
+    for _ in tqdm(range(request_count)):
         response = requests.post(url,json={**payload, "variables": {**payload["variables"], "start": start, "size": size}}, headers={"Authorization": "Bearer unauthenticated"})
         content = json.loads(response.content)
         start += size
