@@ -154,7 +154,7 @@ def run_waitrose_scraper():
     unit = math.ceil(len(products) / process_count)
     
     try:
-        sbr_connection = ChromiumRemoteConnection(f"http://{os.getenv(f'SBR_WEBDRIVER_AUTH1')}@65.21.129.16:9515", "goog", "chrome")
+        sbr_connection = ChromiumRemoteConnection(f"http://{os.getenv(f'SBR_WEBDRIVER_AUTH')}@65.21.129.16:9515", "goog", "chrome")
         
         processes = [
             mp.Process(
