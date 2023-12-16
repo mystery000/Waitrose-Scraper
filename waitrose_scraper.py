@@ -54,7 +54,7 @@ class ProductScraper:
                             'tags',
                             'product_url',
                             'image_url',
-                            'size'
+                            'size',
                             'last_updated' 
                         ]
                         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
