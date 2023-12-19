@@ -27,7 +27,7 @@ class ProductScraper:
         
     def get_product_page_link(self, product_name: str, product_id: str) -> str:
         BASE_URL = "https://www.waitrose.com/ecom/products"
-        normalized_string = product_name.lower().strip()
+        normalized_string = product_name.lower().replace("&", "").strip()
         slug = re.sub(r'[-_\s]+', '-', normalized_string)
         return f"{BASE_URL}/{slug}/{product_id}"
 
@@ -52,6 +52,7 @@ class ProductScraper:
                             'unit_price',
                             'average_rating',
                             'review_count',
+                            'categories',
                             'tags',
                             'product_url',
                             'image_url',
@@ -66,13 +67,24 @@ class ProductScraper:
                         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         source = "Waitrose"
                         title = product["name"]
-                        prd_element = page.find('section', id="productDescription")
-                        description = prd_element.get_text(strip=True) if prd_element else ''
+                        
+                        prd_section = page.find('section', id="productDescription")
+                        description = prd_section.get_text(strip=True) if prd_section else None
+                        
+                        if description is None:
+                            summary_section = page.find('section', id="summary")
+                            description = summary_section.get_text(strip=True) if summary_section else ''
+                        
+                        if description is None:
+                            marketing_section_element = page.find('section', id="marketingDescription")
+                            description = marketing_section_element.get_text(strip=True) if marketing_section_element else ''
+                        
                         item_price = product["displayPrice"]
                         unit_price = product["displayPriceQualifier"]
                         average_rating = product["reviews"]["averageRating"]
                         review_count = product["reviews"]["reviewCount"]
-                        tags = ','.join([category["name"] for category in product["categories"]])
+                        categories = ','.join([category["name"] for category in product["categories"]])
+                        tags = ','.join([tag["name"] for tag in product["productTags"]] if product["productTags"] else [])
                         product_url = product_url
                         image_url = product["productImageUrls"]["large"]
                         size = product["size"]
@@ -85,6 +97,7 @@ class ProductScraper:
                             'unit_price': unit_price,
                             'average_rating': average_rating,
                             'review_count': review_count,
+                            'categories': categories,
                             'tags': tags,
                             'product_url': product_url,
                             'image_url': image_url,
@@ -100,6 +113,7 @@ class ProductScraper:
                             'unit_price': unit_price,
                             'average_rating': average_rating,
                             'review_count': review_count,
+                            'categories': categories,
                             'tags': tags,
                             'product_url': product_url,
                             'image_url': image_url,
