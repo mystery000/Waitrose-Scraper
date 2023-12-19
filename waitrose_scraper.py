@@ -45,12 +45,13 @@ class ProductScraper:
                     
                     with open("waitrose_products.csv", 'a', newline='') as csv_file:
                         fieldnames = [
+                            'source',
                             'title', 
                             'description',
                             'item_price',
                             'unit_price',
-                            'averageRating',
-                            'reviewCount',
+                            'average_rating',
+                            'review_count',
                             'tags',
                             'product_url',
                             'image_url',
@@ -63,25 +64,27 @@ class ProductScraper:
                             writer.writeheader()
                             
                         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        source = "Waitrose"
                         title = product["name"]
-                        desc_element = page.find('section', id="marketingDescriptionBop")
-                        description = desc_element.get_text() if desc_element else ''
+                        prd_element = page.find('section', id="productDescription")
+                        description = prd_element.get_text(strip=True) if prd_element else ''
                         item_price = product["displayPrice"]
                         unit_price = product["displayPriceQualifier"]
-                        averageRating = product["reviews"]["averageRating"]
-                        reviewCount = product["reviews"]["reviewCount"]
+                        average_rating = product["reviews"]["averageRating"]
+                        review_count = product["reviews"]["reviewCount"]
                         tags = ','.join([category["name"] for category in product["categories"]])
                         product_url = product_url
-                        image_url = product["thumbnail"]
+                        image_url = product["productImageUrls"]["large"]
                         size = product["size"]
                         
                         logging.info({
+                            'source': source,
                             'title': title, 
                             'description': description,
                             'item_price': item_price,
                             'unit_price': unit_price,
-                            'averageRating': averageRating,
-                            'reviewCount': reviewCount,
+                            'average_rating': average_rating,
+                            'review_count': review_count,
                             'tags': tags,
                             'product_url': product_url,
                             'image_url': image_url,
@@ -90,12 +93,13 @@ class ProductScraper:
                         })
                     
                         writer.writerow({
+                            'source': source,
                             'title': title, 
                             'description': description,
                             'item_price': item_price,
                             'unit_price': unit_price,
-                            'averageRating': averageRating,
-                            'reviewCount': reviewCount,
+                            'average_rating': average_rating,
+                            'review_count': review_count,
                             'tags': tags,
                             'product_url': product_url,
                             'image_url': image_url,
