@@ -40,7 +40,7 @@ This scraper only supports Ubuntu.
 
 - `source venv/bin/activate`
 
-- `pip install requests html5lib beautifulsoup4 selenium python-dotenv pandas`
+- `pip install requests html5lib beautifulsoup4 selenium python-dotenv pandas tqdm`
 
 ## Configuration
 
