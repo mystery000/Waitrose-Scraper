@@ -1,6 +1,6 @@
 # Description
 
-This is a trusted web scraper for extracting products from [Waitrose](https://waitrose.com).
+This is a trusted web scraper for extracting products from [Waitrose](https://waitrose.com) supermarket.
 
 # Usage
 
