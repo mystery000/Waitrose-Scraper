@@ -11,11 +11,8 @@ import multiprocessing as mp
 from bs4 import BeautifulSoup
 from datetime import datetime
 from selenium import webdriver
-from dotenv import load_dotenv
 from selenium.webdriver import Remote
 from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
-
-load_dotenv()
 
 class ProductScraper:
     _sbr_connection: ChromiumRemoteConnection
@@ -54,6 +51,7 @@ class ProductScraper:
                             'review_count',
                             'categories',
                             'tags',
+                            'nutrition',
                             'product_url',
                             'image_url',
                             'size',
@@ -89,6 +87,28 @@ class ProductScraper:
                         image_url = product["productImageUrls"]["large"]
                         size = product["size"]
                         
+                        nutritions = { "values": [] }
+                        
+                        try:
+                            nutrition_element = page.find("div", class_="nutrition___VCHp1")
+                            nutrition_titles = [child.get_text(strip=True) for child in nutrition_element.thead.tr.children]
+                            nutrition_rows = nutrition_element.table.tbody.find_all("tr")
+
+                            for _id, nutrition_title in enumerate(nutrition_titles):
+                              
+                              if _id == 0 : continue
+
+                              nutrition = { "unit" : nutrition_title }
+
+                              for row in nutrition_rows:
+                                if 'class' not in row.th.attrs: 
+                                  nutrition_cells = list(row.children)
+                                  nutrition[nutrition_cells[0].get_text(strip=True)] = nutrition_cells[_id].get_text(strip=True)
+
+                              nutritions["values"].append(nutrition)
+                        except:
+                            nutritions = { "values": [] }
+                        
                         logging.info({
                             'source': source,
                             'title': title, 
@@ -99,6 +119,7 @@ class ProductScraper:
                             'review_count': review_count,
                             'categories': categories,
                             'tags': tags,
+                            'nutrition': nutritions,
                             'product_url': product_url,
                             'image_url': image_url,
                             'size': size,
@@ -115,6 +136,7 @@ class ProductScraper:
                             'review_count': review_count,
                             'categories': categories,
                             'tags': tags,
+                            'nutrition': nutritions,
                             'product_url': product_url,
                             'image_url': image_url,
                             'size': size,
@@ -172,24 +194,21 @@ def run_waitrose_scraper():
     unit = math.ceil(len(products) / process_count)
     
     try:
-        sbr_connection = ChromiumRemoteConnection(f"http://{os.getenv('SELENIUM_WEBDRIVER_AUTH')}@{os.getenv('SELENIUM_SERVER_IP')}:{os.getenv('SELENIUM_SERVER_PORT')}", "goog", "chrome")
-        
-        processes = [
-            mp.Process(
-                target=ProductScraper(
-                    products[unit * i :], sbr_connection
-                ).scrape_products
-            )
-            if i == (process_count - 1) 
-            else 
-            mp.Process(
-                target=ProductScraper(
-                    products[unit * i : unit * (i + 1)], sbr_connection
-                ).scrape_products
-            )
-            for i in range(process_count)
+        SELENIUM_GRID_IP_ADDRESSES = [
+            "95.217.141.220:9515",
+            "65.21.129.16:9515",
+            "135.181.212.76:9515",
         ]
         
+        sbr_connections = [ChromiumRemoteConnection(f"http://{IP}", "goog", "chrome") for IP in SELENIUM_GRID_IP_ADDRESSES]
+        
+        processes = [
+            mp.Process(target=ProductScraper(products[unit * i :], sbr_connections[i % len(SELENIUM_GRID_IP_ADDRESSES)]).scrape_products)
+            if i == (process_count - 1) else 
+            mp.Process(target=ProductScraper(products[unit * i : unit * (i + 1)], sbr_connections[i % len(SELENIUM_GRID_IP_ADDRESSES)]).scrape_products)
+            for i in range(process_count)
+        ]
+
         for process in processes:
             process.start()
         for process in processes:

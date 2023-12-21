@@ -22,11 +22,7 @@ This scraper only supports Ubuntu.
 
   - Start the Selenium Grid
 
-    - `java -jar selenium-server-<version>.jar hup --port 9515`
-
-    - `java -jar selenium-server-<version>.jar node`   
-
-  - Configure `.env` with your Selenium server IP address and port
+    `java -jar selenium-server-<version>.jar standalone --port 9515`
 
 ## Get the code
 
@@ -40,7 +36,7 @@ This scraper only supports Ubuntu.
 
 - `source venv/bin/activate`
 
-- `pip install requests html5lib beautifulsoup4 selenium python-dotenv pandas tqdm`
+- `pip install requests html5lib beautifulsoup4 selenium pandas tqdm`
 
 ## Configuration
 
