@@ -35,6 +35,7 @@ class ProductScraper:
             try:
                 with Remote(self._sbr_connection, options=chrome_options) as driver:
                     product_url = self.get_product_page_link(product["name"], product["id"])
+                    driver.implicitly_wait(0.2)
                     driver.get(product_url)
                     html = driver.page_source
                     
