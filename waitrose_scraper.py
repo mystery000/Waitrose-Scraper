@@ -11,6 +11,7 @@ import multiprocessing as mp
 from bs4 import BeautifulSoup
 from datetime import datetime
 from selenium import webdriver
+from config import SELENIUM_SERVERS
 from selenium.webdriver import Remote
 from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
 
@@ -192,22 +193,17 @@ def run_waitrose_scraper():
             if product["__typename"] == "GridProduct":
                 products.append(product["searchProduct"])
         
-    process_count = 6
+    process_count = len(SELENIUM_SERVERS) * 2 # Assign two browser sessions per Grid server
+    
     unit = math.ceil(len(products) / process_count)
     
     try:
-        SELENIUM_GRID_IP_ADDRESSES = [
-            "18.169.27.82:9515",
-            "13.42.66.41:9515",
-            "18.171.169.136:9515"
-        ]
-        
-        sbr_connections = [ChromiumRemoteConnection(f"http://{IP}", "goog", "chrome") for IP in SELENIUM_GRID_IP_ADDRESSES]
+        sbr_connections = [ChromiumRemoteConnection(SELENIUM_SERVER, "google", "chrome") for SELENIUM_SERVER in SELENIUM_SERVERS]
         
         processes = [
-            mp.Process(target=ProductScraper(products[unit * i :], sbr_connections[i % len(SELENIUM_GRID_IP_ADDRESSES)]).scrape_products)
+            mp.Process(target=ProductScraper(products[unit * i :], sbr_connections[i % len(SELENIUM_SERVERS)]).scrape_products)
             if i == (process_count - 1) else 
-            mp.Process(target=ProductScraper(products[unit * i : unit * (i + 1)], sbr_connections[i % len(SELENIUM_GRID_IP_ADDRESSES)]).scrape_products)
+            mp.Process(target=ProductScraper(products[unit * i : unit * (i + 1)], sbr_connections[i % len(SELENIUM_SERVERS)]).scrape_products)
             for i in range(process_count)
         ]
 
