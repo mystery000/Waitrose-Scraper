@@ -82,6 +82,7 @@ class ProductScraper:
                         
                         item_price = product["displayPrice"]
                         unit_price = product["displayPriceQualifier"]
+                        if unit_price is None: unit_price = item_price
                         average_rating = product["reviews"]["averageRating"]
                         review_count = product["reviews"]["reviewCount"]
                         categories = ','.join([category["name"] for category in product["categories"]])
